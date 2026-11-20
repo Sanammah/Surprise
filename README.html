@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Tiny Surprise</title>
+    <style>
+        :root {
+            --ink: #39224b;
+            --pink: #ff79b0;
+            --yellow: #ffe66d;
+            --cream: #fffaf1;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+            color: var(--ink);
+            font-family: "Trebuchet MS", sans-serif;
+            background:
+                radial-gradient(circle at 15% 20%, #fff 0 3%, transparent 4%),
+                radial-gradient(circle at 85% 15%, #fff 0 4%, transparent 5%),
+                linear-gradient(135deg, #a8edea, #fed6e3);
+        }
+
+        .card {
+            position: relative;
+            z-index: 2;
+            width: min(560px, calc(100vw - 32px));
+            min-height: 430px;
+            display: grid;
+            place-items: center;
+            padding: 36px;
+            text-align: center;
+            border: 4px solid var(--ink);
+            border-radius: 28px;
+            background: var(--cream);
+            box-shadow: 12px 12px 0 var(--ink);
+        }
+
+        h1 {
+            margin: 12px 0;
+            font-size: clamp(44px, 10vw, 76px);
+            line-height: 0.95;
+        }
+
+        p {
+            margin: 12px 0 24px;
+            font-size: clamp(18px, 4vw, 24px);
+        }
+
+        .tiny { font-size: 16px; opacity: 0.75; }
+
+        button {
+            border: 3px solid var(--ink);
+            border-radius: 999px;
+            padding: 14px 24px;
+            color: var(--ink);
+            background: var(--yellow);
+            font: 800 19px "Trebuchet MS", sans-serif;
+            box-shadow: 5px 5px 0 var(--ink);
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        button:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--ink); }
+        button:active { transform: translate(4px, 4px); box-shadow: 1px 1px 0 var(--ink); }
+
+        .hidden { display: none; }
+
+        .face {
+            font-size: 72px;
+            line-height: 1;
+            animation: wobble 0.7s ease-in-out infinite alternate;
+        }
+
+        .shake { animation: shake 0.12s linear infinite; }
+
+        .confetti {
+            position: fixed;
+            z-index: 10;
+            width: 10px;
+            height: 16px;
+            top: -20px;
+            pointer-events: none;
+            animation: fall linear forwards;
+        }
+
+        @keyframes wobble {
+            from { transform: rotate(-8deg) scale(1); }
+            to { transform: rotate(8deg) scale(1.12); }
+        }
+
+        @keyframes shake {
+            0% { transform: translate(0); }
+            25% { transform: translate(-4px, 3px); }
+            50% { transform: translate(4px, -3px); }
+            75% { transform: translate(-3px, -2px); }
+        }
+
+        @keyframes fall {
+            to { transform: translate(var(--drift), 110vh) rotate(720deg); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .face, .shake, .confetti { animation: none; }
+        }
+    </style>
+</head>
+<body>
+    <main class="card" id="card">
+        <section id="start">
+            <div class="face">🎁</div>
+            <h1>......</h1>
+            <p>There is a surprise hiding here.</p>
+            <button id="openButton" type="button">Open at your own risk</button>
+            <p class="tiny">(It is probably a mistake)</p>
+        </section>
+
+        <section id="prank" class="hidden">
+            <div class="face">⚠️</div>
+            <h1>LOADING...</h1>
+            <p id="loadingText">Downloading more fun...</p>
+        </section>
+
+        <section id="reveal" class="hidden">
+            <div class="face">🎉</div>
+            <h1>YOU ROCK!</h1>
+            <p>you are nigga.</p>
+            <button id="againButton" type="button">Confetti again!</button>
+        </section>
+    </main>
+
+    <script>
+        const card = document.getElementById("card");
+        const openButton = document.getElementById("openButton");
+        const againButton = document.getElementById("againButton");
+        const start = document.getElementById("start");
+        const prank = document.getElementById("prank");
+        const reveal = document.getElementById("reveal");
+        const loadingText = document.getElementById("loadingText");
+
+        function confetti(amount = 100) {
+            const colors = ["#ff79b0", "#ffe66d", "#6bcBef", "#b892ff", "#58d68d"];
+
+            for (let i = 0; i < amount; i++) {
+                const piece = document.createElement("span");
+                piece.className = "confetti";
+                piece.style.left = Math.random() * 100 + "vw";
+                piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.animationDuration = (2 + Math.random() * 2) + "s";
+                piece.style.animationDelay = Math.random() * 0.5 + "s";
+                piece.style.setProperty("--drift", (Math.random() * 200 - 100) + "px");
+                document.body.appendChild(piece);
+                piece.addEventListener("animationend", () => piece.remove());
+            }
+        }
+
+        openButton.addEventListener("click", () => {
+            start.classList.add("hidden");
+            prank.classList.remove("hidden");
+            card.classList.add("shake");
+
+            const messages = [
+                "Downloading more fun...",
+                "Hiding the boring part...",
+                "Finding the perfect joke...",
+                "One tiny problem..."
+            ];
+
+            let index = 0;
+            const timer = setInterval(() => {
+                loadingText.textContent = messages[index++ % messages.length];
+            }, 700);
+
+            setTimeout(() => {
+                clearInterval(timer);
+                card.classList.remove("shake");
+                prank.classList.add("hidden");
+                reveal.classList.remove("hidden");
+                confetti();
+            }, 3000);
+        });
+
+        againButton.addEventListener("click", () => confetti());
+    </script>
+</body>
+</html>
